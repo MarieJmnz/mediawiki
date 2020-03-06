@@ -179,7 +179,7 @@
         group: www-data
 
     - name: Installation Mediawiki
-      command: php /appli/projects/md1/nginx/wiki_devops/maintenance/install.php --dbuser=wiki --dbpass=password --dbname=wiki --dbserver=localhost --dbtype=mysql --scriptpath=/wiki --confpath=/appli/projects/md1/nginx/wiki_devops/wiki  --lang=fr --pass=password wiki wiki
+      command: php "/appli/projects/md1/nginx/wiki_devops/maintenance/install.php" --dbuser=wiki --dbpass=password --dbname=wiki --dbserver=localhost --dbtype=mysql --scriptpath=/wiki --lang=fr --pass=password wiki wiki
 
     - name: Import Donnees.xml
       command: php /appli/projects/md1/nginx/wiki_devops/maintenance/importDump.php files/Donnees.xml

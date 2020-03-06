@@ -189,3 +189,9 @@
 
     - name: Import images
       command: php /appli/projects/md1/maintenance/importImages.php /appli/wikidevops/LIVR/images/
+
+  handlers:
+    - name: stop mysql
+      service:
+        name: mysql
+        state: stopped

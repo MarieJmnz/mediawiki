@@ -151,9 +151,7 @@
 
     - name: desactiver lien symbolique de default
       command: unlink /etc/nginx/sites-enabled/default
-
-    - name: reload Nginx
-      command : systemctl reload nginx
+      notify: restart nginx
 
 # Mediawiki
     - name: Copy Donnees.xml
@@ -190,6 +188,12 @@
       command: php /appli/projects/md1/nginx/maintenance/importImages.php /appli/wikidevops/LIVR/images/
 
   handlers:
+
+    - name: restart nginx
+      service:
+        name: nginx
+        state: restarted
+
     - name: stop mysql
       service:
         name: mysql

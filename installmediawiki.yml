@@ -177,7 +177,7 @@
 
     - name: Creer repertoire du serveur web
       file:
-        dest: /appli/projects/md1/nginx
+        dest: /appli/projects/md1
         state: directory
 
     - name: Copier Donnees.xml dans le répertoire de livraison
@@ -185,7 +185,7 @@
         src: files/Donnees.xml
         dest: /appli/wikidevops/LIVR
 
-    - name: Unarchive wiki_devops.tar.gz
+    - name: Désarchiver wiki_devops.tar.gz
       unarchive:
         src: files/wiki_devops.tar.gz
         dest: /appli/projects/md1
@@ -193,11 +193,11 @@
         owner: www-data
         group: www-data
 
-    - name: Rename wiki_devops
+    - name: Renommer wiki_devops en nginx
       command: mv /appli/projects/md1/wiki_devops /appli/projects/md1/nginx
 
     - name: Install MediaWiki
-      command: php /appli/projects/md1/nginx/maintenance/install.php --dbuser=wiki --dbpass=password --dbname=wiki --dbserver=localhost --scriptpath= --confpath=/appli/projects/md1/nginx/  --lang=fr --pass=password wiki wiki
+      command: php /appli/projects/md1/nginx/maintenance/install.php --dbuser=wiki --dbpass=password --dbname=wiki --dbserver=localhost --scriptpath=/wiki --confpath=/appli/projects/md1/nginx/  --lang=fr --pass=password wiki wiki
 
     - name: Import Donnees.xml
       command: php /appli/projects/md1/nginx/maintenance/importDump.php < /appli/wikidevops/LIVR/Donnees.xml
@@ -214,7 +214,6 @@
       command: php /appli/projects/md1/nginx/maintenance/importImages.php /appli/wikidevops/LIVR/images/
 
   handlers:
-
     - name: restart nginx
       service:
         name: nginx

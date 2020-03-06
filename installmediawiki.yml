@@ -139,6 +139,21 @@
         password: password
         priv: wiki.*:ALL
 
+# Pare-feu
+    - name: pare-feu enable
+      ufw:
+        state: enabled
+
+    - name: autoriser ssh
+      ufw:
+        rule: allow
+        name: OpenSSH
+
+    - name:
+      ufw:
+        rule: allow
+        name: 'Nginx HTTP'
+
 # Configuration Nginx
 
     - name: creer wiki.j2
@@ -154,6 +169,12 @@
       notify: restart nginx
 
 # Mediawiki
+
+    - name: Creer répertoire de livraison
+      file:
+        dest: /appli/wikidevops/LIVR
+        state: directory
+
     - name: Copy Donnees.xml
       copy:
         src: files/Donnees.xml

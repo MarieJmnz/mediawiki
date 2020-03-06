@@ -128,16 +128,16 @@
 
     - name: Create MySQL database
       mysql_db:
-        name: "{{mysql_dbname}}"
+        name: wiki
         state: present
       notify: stop mysql
 
     - name: Create MySQL user
       mysql_user:
-        name: "{{mysql_user}}"
+        name: wiki
         host: localhost
-        password: "{{mysql_passwd}}"
-        priv: "{{mysql_dbname}}.*:ALL"
+        password: password
+        priv: wiki.*:ALL
 
 # Mediawiki
 

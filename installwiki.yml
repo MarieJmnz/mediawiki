@@ -70,13 +70,6 @@
         state: started
         enabled: yes
 
-    - name: Check PHP version
-      command: php --version
-      register: php_version
-    - set_fact:
-        fpm_sock: /run/php/php5.{{ php_version.stdout.split(" ")[1].split(".")[1] }}-fpm.sock
-      when: ansible_distribution == 'Ubuntu'
-
     - name: create nginx config
       template:
         src: templates/nginx/wiki.j2
@@ -98,60 +91,83 @@
         rule: allow
         name: 'Nginx HTTP'
 
-# MySQL
-    - name: install mysql
-      package:
-        name: "{{ item }}"
-        state: present
-      loop:
-        - mysql-server
-        - python-mysqldb
-
-    - name: Generate new root password
-      command: openssl rand -hex 7
-      args:
-        creates: /root/.my.cnf
-      register: mysql_new_root_pass
-
-    - name: remove anonymous users
-      mysql_user:
-        name: ""
-        state: absent
-      when: mysql_new_root_pass.changed
-
-    - name: remove test database
-      mysql_db:
-        name: test
-        state: absent
-      when: mysql_new_root_pass.changed
-
-    - name: Output new root password
-      debug:
-        msg: "New root password is {{ mysql_new_root_pass.stdout }}"
-      when: mysql_new_root_pass.changed
-
-    - name: Update root password
-      mysql_user:
-        name: root
-        host: "{{ item }}"
-        password: "{{ mysql_new_root_pass.stdout }}"
-      loop:
-        - "{{ ansible_hostname }}"
-        - 127.0.0.1
-        - ::1
-        - localhost
-      when: mysql_new_root_pass.changed
-
-    - name: Create my.cnf
-      template:
-        src: templates/mysql/my.cnf.j2
-        dest: /root/.my.cnf
+#MySQL
+    - name: Install mysql
+    package:
+      name: "{{item}}"
+      state: present
+    loop:
+      - mysql-server
+      - python-mysqldb
 
     - name: Create mysqld.cnf
-      template:
-        src: templates/mysql/mysqld.cnf.j2
-        dest: /etc/mysql/mysql.conf.d/mysqld.cnf
-      notify: restart mysql
+    copy:
+      src: templates/mysql/mysqld.cnf.j2
+      dest: /etc/mysql/mysql.conf.d/mysqld.cnf
+
+    - name: Start mysql
+    service:
+      name: mysql
+      state: started
+
+    - name: Enable MySQL
+    service:
+      name: mysql
+      enabled: yes
+
+    - name: Generate new root password
+    command: openssl rand -hex 7
+    args:
+      creates: /root/.my.cnf
+    register: mysql_new_root_pass
+
+    - name: Remove anonymous users
+    mysql_user:
+      name: ""
+      state: absent
+    when: mysql_new_root_pass.changed
+
+    - name: Remove test database
+    mysql_db:
+      name: test
+      state: absent
+    when: mysql_new_root_pass.changed
+
+    - name: Output new root password
+    debug:
+      msg: "New root password is {{mysql_new_root_pass.stdout}}"
+    when: mysql_new_root_pass.changed
+
+    - name: Update root password
+    mysql_user:
+      name: root
+      host: "{{ item }}"
+      password: "{{mysql_new_root_pass.stdout}}"
+    loop:
+      - "{{ ansible_hostname }}"
+      - 127.0.0.1
+      - ::1
+      - localhost
+    when: mysql_new_root_pass.changed
+
+    - name: Create my.cnf
+    template:
+      src: my.cnf.j2
+      dest: /root/.my.cnf
+    when: mysql_new_root_pass.changed
+
+    - name: Create MySQL database
+    mysql_db:
+      name: wiki
+      state: present
+    notify: stop mysql
+
+    - name: Create MySQL user
+    mysql_user:
+      name: wiki
+      host: localhost
+      password: password
+      priv: wiki.*:ALL
 
 # MediaWiki
     - name: Unarchive wiki_devops.tar.gz

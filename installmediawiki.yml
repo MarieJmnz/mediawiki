@@ -1,7 +1,7 @@
 ---
 
 - name: ping
-  hosts: wordpress
+  hosts: mediawiki
   become: yes
   tasks:
     - name: ping MachineCible
@@ -172,7 +172,7 @@
 
     - name: Rename wiki_devops
       command: mv /appli/projects/md1/wiki_devops /appli/projects/md1/nginx
-  
+
     - name: Install MediaWiki
       command: php /appli/projects/md1/nginx/wiki_devops/maintenance/install.php --dbuser=wiki --dbpass=password --dbname=wiki --dbserver=localhost --scriptpath= --confpath=/appli/projects/md1/nginx/  --lang=fr --pass=password wiki wiki
 

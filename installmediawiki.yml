@@ -139,24 +139,23 @@
         password: password
         priv: wiki.*:ALL
 
-# Mediawiki
+# Configuration Nginx
 
-    - name: Configuration Nginx
+    - name: creer wiki.j2
       copy:
         src: templates/nginx/wiki.j2
         dest: /etc/nginx/sites-available/
 
-    - name: Disable default conf
-      command: a2dissite 000-default
+    - name: lien symbolique
+      command: ln -s /etc/nginx/sites-available/wiki /etc/nginx/sites-enabled
 
-    - name: Enable wiki.j2
-      command: a2ensite wiki.j2
+    - name: desactiver lien symbolique de default
+      command: unlink /etc/nginx/sites-enabled/default
 
-    - name: Reload nginx configuration
-      service:
-        name: nginx
-        state: reloaded
+    - name: reload Nginx
+      command : systemctl reload nginx
 
+# Mediawiki
     - name: Copy Donnees.xml
       copy:
         src: files/Donnees.xml

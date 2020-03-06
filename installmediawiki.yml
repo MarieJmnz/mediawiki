@@ -8,25 +8,25 @@
       ping:
 
 # TOOLS
-    - name: Install required tools
+    - name: Installer le paquet unzip
       apt:
         name:
           - unzip
         state: present
 
 #GNUPG
-    - name: Add GNUPG
+    - name: Installer le paquet gnupg
       apt:
         name:
           - gnupg
         state: present
 
 # PHP
-    - name: Add the ondrej PHP PPA
+    - name: Ajouter le repository de php
       apt_repository:
         repo: 'ppa:ondrej/php'
 
-    - name: install PHP
+    - name: installer php5.6
       package:
         name: "{{ item }}"
         state: present
@@ -41,7 +41,7 @@
         - php5.6-json
         - php5.6-mbstring
 
-    - name: remove apache2
+    - name: Désinstaller Apache
       apt:
         name: apache2
         state: absent
@@ -49,12 +49,12 @@
 
 #Nginx
 
-    - name: install Nginx
+    - name: installer Nginx
       package:
         name: nginx
         state: present
 
-    - name: start Nginx
+    - name: Démarrer Nginx
       service:
         name: nginx
         state: started
@@ -62,7 +62,7 @@
 
 #MySQL
 
-    - name: Install mysql
+    - name: Installer mysql
       package:
         name: "{{item}}"
         state: present
@@ -70,12 +70,12 @@
         - mysql-server
         - python-mysqldb
 
-    - name: Create mysqld.cnf
+    - name: Créer mysqld.cnf
       copy:
         src: templates/mysql/mysqld.cnf.j2
         dest: /etc/mysql/mysql.conf.d/mysqld.cnf
 
-    - name: Start mysql
+    - name: Démarrer mysql
       service:
         name: mysql
         state: started
@@ -175,7 +175,12 @@
         dest: /appli/wikidevops/LIVR
         state: directory
 
-    - name: Copy Donnees.xml
+    - name: Creer repertoire du serveur web
+      file:
+        dest: /appli/projects/md1/nginx
+        state: directory
+
+    - name: Copier Donnees.xml dans le répertoire de livraison
       copy:
         src: files/Donnees.xml
         dest: /appli/wikidevops/LIVR

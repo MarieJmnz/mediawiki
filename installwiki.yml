@@ -153,62 +153,31 @@
         dest: /etc/mysql/mysql.conf.d/mysqld.cnf
       notify: restart mysql
 
-# MediaWiki
-    - name: Create LIVR folder
-      file:
-        dest: /appli/wikidevops/LIVR
-        state: directory
-
-    - name: Unzip MediaWiki
+# MediaWiki  
+    - name: Unarchive wiki_devops.tar.gz
       unarchive:
-        src: files/md1_01.00.00_data.tar.gz
-        dest: /appli/wikidevops/LIVR
-        creates: /appli/wikidevops/LIVR/wiki_devops/maintenance/install.php
-
-    - name: Create root server folder
-      file:
+        src: files/wiki_devops.tar.gz
         dest: /appli/projects/md1/nginx
-        state: directory
+        mode: 0755
+        owner: www-data
+        group: www-data
 
-    - name: Copy MediaWiki files
-      command: cp -a /appli/wikidevops/LIVR/wiki_devops/. /appli/projects/md1/nginx
-      args:
-        creates: /appli/projects/md1/nginx/maintenance/install.php
+    - name: Installation Mediawiki
+      command: php /appli/projects/md1/nginx/maintenance/install.php" --dbuser=wiki --dbpass=password --dbname=wiki --dbserver=localhost --dbtype=mysql --scriptpath=/wiki --confpath=/appli/projects/md1/nginx/wiki  --lang=fr --pass=password wiki wiki
 
-    - name: Create MediaWiki MySQL database
-      mysql_db:
-        name: wiki
-        state: present
+    - name: Import Donnees.xml
+      command: php /appli/projects/md1/nginx/maintenance/importDump.php files/Donnees.xml
 
-    - name: Create mediawiki MySQL user
-      mysql_user:
-        name: wiki
-        host: localhost
-        password: password
-        priv: wiki.*:ALL
+    - name: Rebuild recent changes
+      command: php /appli/projects/md1/nginx/maintenance/rebuildrecentchanges.php
 
-    - name: Create LocalSettings.php
-      template:
-        src: templates/wordpress/LocalSettings.php.j2
-        dest: /appli/projects/md1/nginx/LocalSettings.php
-
-    - name: Does the database exist?
-      command: mysql -u root wiki -e "SELECT ID FROM wiki.users LIMIT 1;"
-      register: db_exist
-      ignore_errors: true
-
-    - name: Copy MediaWiki DB
-      copy:
-        src: files/backup.sql.j2
-        dest: /appli/wikidevops/LIVR/backup.sql
-      when: db_exist.rc > 0
-
-    - name: Import MediaWiki DB
-      mysql_db:
-        target: /appli/wikidevops/LIVR/backup.sql
-        state: import
-        name: wiki
-      when: db_exist.rc > 0
+    - name: Unarchive dump_image.tar.gz
+      unarchive:
+        src: files/dump_image.tar.gz
+        dest: /appli/projects/md1/nginx
+        mode: 0755
+        owner: www-data
+        group: www-data
 
   handlers:
     - name: restart nginx

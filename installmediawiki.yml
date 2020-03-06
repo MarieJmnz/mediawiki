@@ -156,16 +156,10 @@
 
 # Configuration Nginx
 
-    - name: creer wiki.j2
-      copy:
-        src: templates/nginx/wiki.j2
-        dest: /etc/nginx/sites-available/
-
-    - name: lien symbolique
-      command: ln -s /etc/nginx/sites-available/wiki /etc/nginx/sites-enabled
-
-    - name: desactiver lien symbolique de default
-      command: unlink /etc/nginx/sites-enabled/default
+    - name: Configuration Nginx
+      template:
+        src: templates/nginx/default.j2
+        dest: /etc/nginx/sites-available/default
       notify: restart nginx
 
 # Mediawiki
@@ -175,10 +169,15 @@
         dest: /appli/wikidevops/LIVR
         state: directory
 
-    - name: Creer repertoire du serveur web
+    - name: Create root server folder
       file:
-        dest: /appli/projects/md1
+        dest: /appli/projects/md1/nginx/wiki
         state: directory
+
+    - name: Copy MediaWiki files
+      command: cp -a /appli/wikidevops/LIVR/wiki_devops/. /appli/projects/md1/nginx/wiki
+      args:
+        creates: /appli/projects/md1/nginx/wiki/maintenance/install.php
 
     - name: Copier Donnees.xml dans le répertoire de livraison
       copy:
@@ -196,14 +195,14 @@
     - name: Renommer wiki_devops en nginx
       command: mv /appli/projects/md1/wiki_devops /appli/projects/md1/nginx
 
-    - name: Install MediaWiki
-      command: php /appli/projects/md1/nginx/maintenance/install.php --dbuser=wiki --dbpass=password --dbname=wiki --dbserver=localhost --scriptpath=/wiki --confpath=/appli/projects/md1/nginx/  --lang=fr --pass=password wiki wiki
+    - name: Install php
+      command: php /appli/projects/md1/nginx/wiki/maintenance/install.php --dbname=wiki --dbserver=localhost --dbuser=wiki --dbpass=password --lang=fr --pass=password --scriptpath=/ "wiki" "wiki"
 
     - name: Import Donnees.xml
-      command: php /appli/projects/md1/nginx/maintenance/importDump.php < /appli/wikidevops/LIVR/Donnees.xml
+      command: php /appli/projects/md1/nginx/wiki/maintenance/importDump.php < /appli/wikidevops/LIVR/Donnees.xml
 
     - name: Rebuild recent changes
-      command: php /appli/projects/md1/nginx/maintenance/rebuildrecentchanges.php
+      command: php /appli/projects/md1/nginx/wiki/maintenance/rebuildrecentchanges.php
 
     - name: Unarchive Images
       unarchive:
@@ -211,7 +210,7 @@
         dest: /appli/wikidevops/LIVR
 
     - name: Import images
-      command: php /appli/projects/md1/nginx/maintenance/importImages.php /appli/wikidevops/LIVR/images/
+      command: php /appli/projects/md1/nginx/wiki/maintenance/importImages.php /appli/wikidevops/LIVR/images/
 
   handlers:
     - name: restart nginx

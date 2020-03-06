@@ -158,3 +158,8 @@
       service:
         name: nginx
         state: restarted
+
+    - name: restart mysql
+      service:
+        name: mysql
+        state: restarted

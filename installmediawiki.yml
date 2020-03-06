@@ -143,14 +143,14 @@
 
     - name: Configuration Nginx
       copy:
-        src: wiki.conf
+        src: templates/nginx/wiki.j2
         dest: /etc/nginx/sites-available/
 
     - name: Disable default conf
       command: a2dissite 000-default
 
-    - name: Enable wiki.conf
-      command: a2ensite wiki.conf
+    - name: Enable wiki.j2
+      command: a2ensite wiki.j2
 
     - name: Reload nginx configuration
       service:

@@ -171,7 +171,7 @@
 
     - name: Create root server folder
       file:
-        dest: /appli/projects/md1/nginx/wiki
+        dest: /appli/projects/md1/nginx/
         state: directory
 
     - name: Copier Donnees.xml dans le répertoire de livraison
@@ -188,7 +188,7 @@
         group: www-data
 
     - name: Renommer wiki_devops en nginx
-      command: mv /appli/projects/md1/wiki_devops /appli/projects/md1/nginx
+      command: mv /appli/projects/md1/wiki_devops /appli/projects/md1/wiki
 
     - name: Install php
       command: php /appli/projects/md1/nginx/wiki/maintenance/install.php --dbname=wiki --dbserver=localhost --dbuser=wiki --dbpass=password --lang=fr --pass=password --scriptpath=/ "wiki" "wiki"

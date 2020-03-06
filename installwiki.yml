@@ -97,3 +97,9 @@
       ufw:
         rule: allow
         name: 'Nginx HTTP'
+
+  handlers:
+    - name: restart nginx
+      service:
+        name: nginx
+        state: restarted

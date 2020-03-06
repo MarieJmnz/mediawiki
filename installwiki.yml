@@ -153,7 +153,7 @@
         dest: /etc/mysql/mysql.conf.d/mysqld.cnf
       notify: restart mysql
 
-# MediaWiki  
+# MediaWiki
     - name: Unarchive wiki_devops.tar.gz
       unarchive:
         src: files/wiki_devops.tar.gz
@@ -163,7 +163,7 @@
         group: www-data
 
     - name: Installation Mediawiki
-      command: php /appli/projects/md1/nginx/maintenance/install.php" --dbuser=wiki --dbpass=password --dbname=wiki --dbserver=localhost --dbtype=mysql --scriptpath=/wiki --confpath=/appli/projects/md1/nginx/wiki  --lang=fr --pass=password wiki wiki
+      command: php /appli/projects/md1/nginx/maintenance/install.php --dbuser=wiki --dbpass=password --dbname=wiki --dbserver=localhost --dbtype=mysql --scriptpath=/wiki --confpath=/appli/projects/md1/nginx/wiki  --lang=fr --pass=password wiki wiki
 
     - name: Import Donnees.xml
       command: php /appli/projects/md1/nginx/maintenance/importDump.php files/Donnees.xml

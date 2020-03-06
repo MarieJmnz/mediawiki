@@ -1,0 +1,188 @@
+---
+
+- name: ping
+  hosts: wordpress
+  become: yes
+  tasks:
+    - name: ping MachineCible
+      ping:
+
+# TOOLS
+    - name: Install required tools
+      apt:
+        name:
+          - unzip
+        state: present
+
+#GNUPG
+    - name: Add GNUPG
+      apt:
+        name:
+          - gnupg
+        state: present
+
+# PHP
+    - name: Add the ondrej PHP PPA
+      apt_repository:
+        repo: 'ppa:ondrej/php'
+
+    - name: install PHP
+      package:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - php5.6
+        - php5.6-fpm
+        - php5.6-mysql
+        - php5.6-xml
+        - php5.6-curl
+        - php5.6-gd
+        - php5.6-intl
+        - php5.6-json
+        - php5.6-mbstring
+
+    - name: remove apache2
+      apt:
+        name: apache2
+        state: absent
+        purge: yes
+
+#Nginx
+
+    - name: install Nginx
+      package:
+        name: nginx
+        state: present
+
+    - name: start Nginx
+      service:
+        name: nginx
+        state: started
+        enabled: yes
+
+#MySQL
+
+    - name: Install mysql
+      package:
+        name: "{{item}}"
+        state: present
+      loop:
+        - mysql-server
+        - python-mysqldb
+
+    - name: Create mysqld.cnf
+      copy:
+        src: mysqld.cnf
+        dest: /etc/mysql/mysql.conf.d/mysqld.cnf
+
+    - name: Start mysql
+      service:
+        name: mysql
+        state: started
+
+    - name: Enable MySQL
+      service:
+        name: mysql
+        enabled: yes
+
+    - name: Generate new root password
+      command: openssl rand -hex 7
+      args:
+        creates: /root/.my.cnf
+      register: mysql_new_root_pass
+
+    - name: Remove anonymous users
+      mysql_user:
+        name: ""
+        state: absent
+      when: mysql_new_root_pass.changed
+
+    - name: Remove test database
+      mysql_db:
+        name: test
+        state: absent
+      when: mysql_new_root_pass.changed
+
+    - name: Output new root password
+      debug:
+        msg: "New root password is {{mysql_new_root_pass.stdout}}"
+      when: mysql_new_root_pass.changed
+
+    - name: Update root password
+      mysql_user:
+        name: root
+        host: "{{ item }}"
+        password: "{{mysql_new_root_pass.stdout}}"
+      loop:
+        - "{{ ansible_hostname }}"
+        - 127.0.0.1
+        - ::1
+        - localhost
+      when: mysql_new_root_pass.changed
+
+    - name: Create my.cnf
+      template:
+        src: my.cnf.j2
+        dest: /root/.my.cnf
+      when: mysql_new_root_pass.changed
+
+    - name: Create MySQL database
+      mysql_db:
+        name: "{{mysql_dbname}}"
+        state: present
+      notify: stop mysql
+
+    - name: Create MySQL user
+      mysql_user:
+        name: "{{mysql_user}}"
+        host: localhost
+        password: "{{mysql_passwd}}"
+        priv: "{{mysql_dbname}}.*:ALL"
+
+# Mediawiki
+
+    - name: Configuration Nginx
+      copy:
+        src: wiki.conf
+        dest: /etc/nginx/sites-available/
+
+    - name: Disable default conf
+      command: a2dissite 000-default
+
+    - name: Enable wiki.conf
+      command: a2ensite wiki.conf
+
+    - name: Reload nginx configuration
+      service:
+        name: nginx
+        state: reloaded
+
+    - name: Copy Donnees.xml
+      copy:
+        src: files/Donnees.xml
+        dest: /appli/wikidevops/LIVR
+
+    - name: Unarchive wiki_devops.tar.gz
+      unarchive:
+        src: files/wiki_devops.tar.gz
+        dest: /appli/projects/md1/nginx
+        mode: 0755
+        owner: www-data
+        group: www-data
+
+    - name: Install MediaWiki
+      command: php /appli/projects/md1/nginx/wiki_devops/maintenance/install.php --dbuser=wiki --dbpass=password --dbname=wiki --dbserver=localhost --scriptpath= --confpath=/appli/projects/md1/nginx/wiki_devops  --lang=fr --pass=password wiki wiki
+
+    - name: Import Donnees.xml
+      command: php /appli/projects/md1/nginx/wiki_devops/maintenance/importDump.php < /appli/wikidevops/LIVR/Donnees.xml
+
+    - name: Rebuild recent changes
+      command: php /appli/projects/md1/nginx/wiki_devops/maintenance/rebuildrecentchanges.php
+
+    - name: Unarchive Images
+      unarchive:
+        src: files/dump_image.tar.gz
+        dest: /appli/wikidevops/LIVR
+
+    - name: Import images
+      command: php /appli/projects/md1/nginx/wiki_devops/maintenance/importImages.php /appli/wikidevops/LIVR/images/

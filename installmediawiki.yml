@@ -72,7 +72,7 @@
 
     - name: Create mysqld.cnf
       copy:
-        src: mysqld.cnf
+        src: templates/mysql/mysqld.cnf.j2
         dest: /etc/mysql/mysql.conf.d/mysqld.cnf
 
     - name: Start mysql

@@ -165,19 +165,22 @@
     - name: Unarchive wiki_devops.tar.gz
       unarchive:
         src: files/wiki_devops.tar.gz
-        dest: /appli/projects/md1/nginx
+        dest: /appli/projects/md1
         mode: 0755
         owner: www-data
         group: www-data
 
+    - name: Rename wiki_devops
+      command: mv /appli/projects/md1/wiki_devops /appli/projects/md1/nginx
+  
     - name: Install MediaWiki
-      command: php /appli/projects/md1/nginx/wiki_devops/maintenance/install.php --dbuser=wiki --dbpass=password --dbname=wiki --dbserver=localhost --scriptpath= --confpath=/appli/projects/md1/nginx/wiki_devops  --lang=fr --pass=password wiki wiki
+      command: php /appli/projects/md1/nginx/wiki_devops/maintenance/install.php --dbuser=wiki --dbpass=password --dbname=wiki --dbserver=localhost --scriptpath= --confpath=/appli/projects/md1/nginx/  --lang=fr --pass=password wiki wiki
 
     - name: Import Donnees.xml
-      command: php /appli/projects/md1/nginx/wiki_devops/maintenance/importDump.php < /appli/wikidevops/LIVR/Donnees.xml
+      command: php /appli/projects/md1/nginx/maintenance/importDump.php < /appli/wikidevops/LIVR/Donnees.xml
 
     - name: Rebuild recent changes
-      command: php /appli/projects/md1/nginx/wiki_devops/maintenance/rebuildrecentchanges.php
+      command: php /appli/projects/md1/maintenance/rebuildrecentchanges.php
 
     - name: Unarchive Images
       unarchive:
@@ -185,4 +188,4 @@
         dest: /appli/wikidevops/LIVR
 
     - name: Import images
-      command: php /appli/projects/md1/nginx/wiki_devops/maintenance/importImages.php /appli/wikidevops/LIVR/images/
+      command: php /appli/projects/md1/maintenance/importImages.php /appli/wikidevops/LIVR/images/

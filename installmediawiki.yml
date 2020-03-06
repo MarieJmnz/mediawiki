@@ -169,7 +169,7 @@
         dest: /appli/wikidevops/LIVR
         state: directory
 
-    - name: Create root server folder
+    - name: Créer répertoire du serveur web
       file:
         dest: /appli/projects/md1/nginx/
         state: directory
@@ -182,13 +182,13 @@
     - name: Désarchiver wiki_devops.tar.gz
       unarchive:
         src: files/wiki_devops.tar.gz
-        dest: /appli/projects/md1
+        dest: /appli/projects/md1/nginx
         mode: 0755
         owner: www-data
         group: www-data
 
     - name: Renommer wiki_devops en nginx
-      command: mv /appli/projects/md1/wiki_devops /appli/projects/md1/wiki
+      command: mv /appli/projects/md1/nginx/wiki_devops /appli/projects/md1/nginx/wiki
 
     - name: Install php
       command: php /appli/projects/md1/nginx/wiki/maintenance/install.php --dbname=wiki --dbserver=localhost --dbuser=wiki --dbpass=password --lang=fr --pass=password --scriptpath=/ "wiki" "wiki"

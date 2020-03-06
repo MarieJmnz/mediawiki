@@ -1,7 +1,7 @@
 ---
 
 - name: ping
-  hosts: wordpress
+  hosts: mediawiki
   become: yes
   tasks:
     - name: ping MachineCible

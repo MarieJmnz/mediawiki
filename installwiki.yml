@@ -57,3 +57,43 @@
         name: apache2
         state: absent
         purge: yes
+
+#Nginx
+    - name: install Nginx
+      package:
+        name: nginx
+        state: present
+
+    - name: start Nginx
+      service:
+        name: nginx
+        state: started
+        enabled: yes
+
+    - name: Check PHP version
+      command: php --version
+      register: php_version
+    - set_fact:
+        fpm_sock: /run/php/php5.{{ php_version.stdout.split(" ")[1].split(".")[1] }}-fpm.sock
+      when: ansible_distribution == 'Ubuntu'
+
+    - name: create nginx config
+      template:
+        src: templates/nginx/wiki.j2
+        dest: /etc/nginx/sites-available/wiki
+      notify: restart nginx
+
+# Pare-feu
+    - name: pare-feu enable
+      ufw:
+        state: enabled
+
+    - name: autoriser ssh
+      ufw:
+        rule: allow
+        name: OpenSSH
+
+    - name:
+      ufw:
+        rule: allow
+        name: 'Nginx HTTP'

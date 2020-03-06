@@ -1,7 +1,7 @@
 ---
 
 - name: ping
-  hosts: group_mediawiki
+  hosts: mediawiki
   become: yes
   tasks:
     - name: ping_MachineCible
